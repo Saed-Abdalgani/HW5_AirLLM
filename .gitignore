@@ -1,0 +1,58 @@
+# Secrets / credentials — NEVER commit these
+.env
+*.pem
+*.key
+*.crt
+
+# Python / uv
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# uv
+uv.lock
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Model caches & large binary data
+data/
+~/.cache/huggingface/
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.ckpt
+
+# Results — keep JSON/CSV deliverables tracked, but ignore large raw logs
+results/logs/
+results/*.log
+
+# Assets (charts) — track PNGs
+# assets/ is fully tracked
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Ruff
+.ruff_cache/

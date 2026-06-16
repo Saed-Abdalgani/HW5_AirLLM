@@ -1,0 +1,4 @@
+backend,model_id,status,failure_reason,load_time_s,generate_time_s,total_runtime_s,tokens_per_s,peak_process_rss_mb,peak_system_used_mb,timestamp
+ollama,qwen2:0.5b,success,,2.847,4.213,7.06,3.797,612.4,5847.2,2026-06-15T14:05:32.001847+00:00
+transformers-cpu,Qwen/Qwen2.5-3B-Instruct,failed,OOM,47.312,,47.312,,3487.9,7931.4,2026-06-15T14:18:47.339201+00:00
+airllm,Qwen/Qwen2.5-3B-Instruct,success,,312.84,1847.52,2160.36,0.00866,2941.7,6388.3,2026-06-15T15:07:22.118493+00:00

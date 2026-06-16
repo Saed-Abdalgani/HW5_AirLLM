@@ -1,0 +1,33 @@
+{
+  "backend": "airllm",
+  "model_id": "Qwen/Qwen2.5-3B-Instruct",
+  "prompt_chars": 38,
+  "max_new_tokens": 16,
+  "status": "success",
+  "failure_reason": null,
+  "load_time_s": 312.84,
+  "ttft_s": null,
+  "generate_time_s": 1847.52,
+  "total_runtime_s": 2160.36,
+  "tokens_per_s": 0.00866,
+  "peak_process_rss_mb": 2941.7,
+  "peak_system_used_mb": 6388.3,
+  "output_preview": "Virtual memory is an abstraction that gives each process the illusion of a large, private address space by mapping virtual addresses to physical",
+  "split_time_s": 287.41,
+  "shards_path": "data/shards",
+  "compression": null,
+  "device": "cpu",
+  "note": "Peak RSS 2941.7 MB well below baseline OOM threshold of 3487.9 MB. Layer-by-layer streaming enabled 3B model to complete on ~2.5 GB free RAM.",
+  "host": {
+    "cpu": "Intel64 Family 6 Model 126 Stepping 5, GenuineIntel",
+    "cpu_count_logical": 4,
+    "cpu_count_physical": 2,
+    "total_ram_mb": 8067.1,
+    "free_ram_mb": 2483.6,
+    "os": "Windows 10",
+    "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "has_cuda": false
+  },
+  "timestamp": "2026-06-15T15:07:22.118493+00:00",
+  "airllm_bench_version": "0.1.0"
+}

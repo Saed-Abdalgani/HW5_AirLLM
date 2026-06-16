@@ -1,0 +1,29 @@
+{
+  "backend": "transformers-cpu",
+  "model_id": "Qwen/Qwen2.5-3B-Instruct",
+  "prompt_chars": 38,
+  "max_new_tokens": 16,
+  "status": "failed",
+  "failure_reason": "OOM",
+  "load_time_s": 47.312,
+  "ttft_s": null,
+  "generate_time_s": null,
+  "total_runtime_s": 47.312,
+  "tokens_per_s": null,
+  "peak_process_rss_mb": 3487.9,
+  "peak_system_used_mb": 7931.4,
+  "output_preview": null,
+  "host": {
+    "cpu": "Intel64 Family 6 Model 126 Stepping 5, GenuineIntel",
+    "cpu_count_logical": 4,
+    "cpu_count_physical": 2,
+    "total_ram_mb": 8067.1,
+    "free_ram_mb": 2483.6,
+    "os": "Windows 10",
+    "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "has_cuda": false
+  },
+  "error_details": "RuntimeError: [enforce fail at alloc_cpu.cpp:114] data. DefaultCPUAllocator: not enough memory: you tried to allocate 2684354560 bytes. Buy new RAM! Cannot allocate memory in static TLS block.",
+  "timestamp": "2026-06-15T14:18:47.339201+00:00",
+  "airllm_bench_version": "0.1.0"
+}
