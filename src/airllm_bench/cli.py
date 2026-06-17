@@ -112,7 +112,7 @@ def cmd_host_spec() -> None:
 
 def _print_result(result) -> None:  # noqa: ANN001
     typer.echo(
-        f"\n{'─' * 50}\n"
+        f"\n{'-' * 50}\n"
         f"  Backend : {result.backend}\n"
         f"  Status  : {result.status}\n"
         f"  Model   : {result.model_id}\n"
@@ -122,7 +122,7 @@ def _print_result(result) -> None:  # noqa: ANN001
         f"  Peak RSS: {result.peak_process_rss_mb:.1f} MB\n" if result.peak_process_rss_mb else ""
         f"  Reason  : {result.failure_reason}\n" if result.failure_reason else ""
         f"  Preview : {result.output_preview!r}\n" if result.output_preview else ""
-        f"{'─' * 50}\n"
+        f"{'-' * 50}\n"
     )
 
 

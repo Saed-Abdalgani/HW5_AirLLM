@@ -245,8 +245,8 @@ documented N/A with rationale.
 | 5.1 | `sdk.summarize()` → merged comparison DataFrame/CSV | P0 | ☐ |
 | 5.2 | `sdk.plot_comparison()` → bar charts (runtime, peak RSS, tokens/s) to `assets/` | P0 | ☐ |
 | 5.3 | Build comparison table: GPU / CPU / AirLLM / Ollama | P0 | ☐ |
-| 5.4 | Write analysis in `results/` + README: why AirLLM fits (virtual-memory framing) | P0 | ☐ |
-| 5.5 | Document precision caveat (fp16 vs q4) and latency context | P1 | ☐ |
+| 5.4 | Write analysis in `results/` + README: why AirLLM fits (virtual-memory framing) | P0 | ☑ |
+| 5.5 | Document precision caveat (fp16 vs q4) and latency context | P1 | ☑ |
 
 **DoD P5:** One comparison CSV + ≥1 chart + written analysis answering the
 assignment (response time, memory, runtime across GPU/CPU/AirLLM).
