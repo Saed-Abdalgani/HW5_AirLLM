@@ -61,6 +61,17 @@ def cmd_run_all() -> None:
         _print_result(r)
 
 
+@app.command("import-gpu")
+def cmd_import_gpu(
+    json_path: Optional[Path] = typer.Option(None, "--json-path", help="Path to Colab JSON."),  # noqa: UP007
+) -> None:
+    """Import a GPU run result, or record a placeholder N/A result if none provided."""
+    settings = get_settings()
+    runner = BenchmarkRunner(settings)
+    result = runner.import_gpu_result(json_path)
+    _print_result(result)
+
+
 @app.command("report")
 def cmd_report() -> None:
     """Print a comparison table from all saved results."""

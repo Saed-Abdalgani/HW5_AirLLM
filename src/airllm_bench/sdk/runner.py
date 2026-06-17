@@ -81,6 +81,24 @@ class BenchmarkRunner:
             results.append(self.run(b))
         return results
 
+    def import_gpu_result(self, colab_json_path: Path | None = None) -> RunResult:
+        """Import a Colab GPU JSON result or record an N/A estimate if not found."""
+        import dataclasses
+        from airllm_bench.services.backends.gpu_importer import GpuResultImporter
+        
+        if colab_json_path and colab_json_path.exists():
+            importer = GpuResultImporter(colab_json_path)
+            data = importer.load()
+        else:
+            data = GpuResultImporter.make_na_result(self._settings.model_id)
+            
+        valid_keys = {f.name for f in dataclasses.fields(RunResult)}
+        filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+        result = RunResult(**filtered_data)
+        
+        self._recorder.write(result)
+        return result
+
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------

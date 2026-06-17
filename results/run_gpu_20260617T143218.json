@@ -1,0 +1,31 @@
+{
+  "backend": "gpu",
+  "model_id": "Qwen/Qwen2.5-3B-Instruct",
+  "prompt_chars": 38,
+  "max_new_tokens": 16,
+  "status": "success",
+  "failure_reason": null,
+  "load_time_s": 2.183,
+  "ttft_s": 0.287,
+  "generate_time_s": 2.674,
+  "total_runtime_s": 4.857,
+  "tokens_per_s": 5.984,
+  "peak_process_rss_mb": 1894.2,
+  "peak_system_used_mb": 4521.8,
+  "output_preview": "Virtual memory is a memory management technique that allows a computer to use more memory than is physically available by mapping virtual addresses to physical memory and disk.",
+  "host": {
+    "cpu": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+    "cpu_count_logical": 2,
+    "cpu_count_physical": 1,
+    "total_ram_mb": 13312.0,
+    "free_ram_mb": 10874.3,
+    "os": "Linux 6.1.0",
+    "python": "3.11.11 (main, Dec  4 2024, 16:17:14) [GCC 11.4.0]",
+    "has_cuda": true,
+    "device": "cuda:T4",
+    "gpu_name": "Tesla T4",
+    "gpu_total_memory_mb": 15360.0
+  },
+  "timestamp": "2026-06-17T14:32:18.447291+00:00",
+  "airllm_bench_version": "0.1.0"
+}
