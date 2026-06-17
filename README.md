@@ -195,16 +195,19 @@ uv run pytest tests/integration/ -m integration -v
 
 Results from the target host: My PC only has 8 GB RAM. 5 GB is used by the OS by default, and ~1 GB is used for running Python files. This leaves only ~2 GB of free RAM for this task, which is why we used the `Qwen/Qwen2.5-3B-Instruct` model to validate the constraint.
 
-| Backend | Model | Status | Load (s) | Generate (s) | Total (s) | Tok/s | Peak RSS (MB) |
-|---------|-------|--------|----------|--------------|-----------|-------|---------------|
-| ollama | qwen2:0.5b | ✅ success | 2.85 | 4.21 | 7.06 | 3.80 | 612 |
-| transformers-cpu | Qwen2.5-3B | ❌ OOM | 47.3 | — | 47.3 | — | **3488** |
-| airllm | Qwen2.5-3B | ✅ success | 312.8 | 1847.5 | **2160** | 0.009 | **2942** |
+| Backend | Model | Status | Response Time (s) | Peak Memory (MB) | Total Runtime (s) | Tokens/s |
+|---------|-------|--------|-------------------|------------------|-------------------|----------|
+| GPU | Qwen2.5-3B-Instruct | success | 2.67 | 1894.2 | 4.86 | 5.984 |
+| CPU | Qwen2.5-3B-Instruct | failed (OOM) | — | 3487.9 | 47.31 | — |
+| AirLLM | Qwen2.5-3B-Instruct | success | 1847.52 | 2941.7 | 2160.36 | 0.009 |
+| Ollama | qwen2:0.5b | success | 4.21 | 612.4 | 7.06 | 3.797 |
 
-> **Key finding:** AirLLM succeeded where transformers-cpu OOM'd, by keeping peak RSS
-> 546 MB lower — staying under the physical-RAM limit via layer-by-layer streaming.
+> **Key finding:** AirLLM completed the 3B model where the all-in-RAM CPU baseline OOM'd,
+> trading ~36 minutes of runtime for a 546 MB lower peak RSS via layer-by-layer streaming.
+> GPU (Colab T4) is the speed reference; Ollama uses a smaller q4-quantised model.
 
-Charts in [`assets/`](assets/).  Raw JSON in [`results/`](results/).
+Charts in [`assets/`](assets/).  Full table in [`results/comparison_table.md`](results/comparison_table.md).
+Raw JSON + CSV in [`results/`](results/).
 
 ---
 
@@ -243,7 +246,10 @@ HW5_AirLLM/
 │   ├── cli.py                # typer CLI → SDK only
 │   ├── sdk/
 │   │   ├── runner.py         # BenchmarkRunner (public API)
-│   │   └── analytics.py      # summarize(), plot_comparison()
+│   │   ├── analytics.py          # summarize(), public exports
+│   │   ├── analytics_data.py     # JSON → DataFrame + CSV
+│   │   ├── analytics_plot.py     # bar charts
+│   │   └── analytics_table.py    # Markdown comparison table
 │   ├── services/
 │   │   ├── backends/
 │   │   │   ├── base.py       # InferenceBackend ABC

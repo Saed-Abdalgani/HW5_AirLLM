@@ -24,7 +24,12 @@ from typing import Optional
 import typer
 
 from airllm_bench.constants import BackendName
-from airllm_bench.sdk.analytics import plot_comparison, summarize
+from airllm_bench.sdk.analytics import (
+    plot_comparison,
+    render_comparison_markdown,
+    summarize,
+    write_comparison_table,
+)
 from airllm_bench.sdk.runner import BenchmarkRunner
 from airllm_bench.services.host_spec import capture_host_spec, write_host_spec
 from airllm_bench.shared.config import get_settings
@@ -88,10 +93,15 @@ def cmd_report() -> None:
     existing = [c for c in cols if c in df.columns]
     typer.echo(df[existing].to_string(index=False))
 
+    table_path = write_comparison_table(df, results_dir)
+    typer.echo(f"\n{render_comparison_markdown(df)}")
+    typer.echo(f"\nTable saved to: {table_path}")
+
     assets_dir = Path(settings.assets_dir)
     paths = plot_comparison(df, assets_dir)
     if paths:
-        typer.echo(f"\nCharts saved to: {assets_dir}")
+        names = ", ".join(p.name for p in paths)
+        typer.echo(f"Charts saved to: {assets_dir} ({names})")
 
 
 @app.command("host-spec")
