@@ -317,6 +317,24 @@ The baseline (`transformers-cpu`) loads all layers simultaneously → requires
 
 ---
 
+## ⚖️ Precision Caveat & Latency Context
+
+When evaluating these benchmarks, it is critical to compare these systems honestly by accounting for differences in data precision and latency.
+
+### The Precision Discrepancy (`fp16` vs. `q4_0`)
+The benchmark involves three backends, but they do not operate on identical precision:
+- **AirLLM & transformers-cpu:** Both utilize the original `fp16` (16-bit floating point) weights. This ensures maximum fidelity but inherently demands more memory and compute.
+- **Ollama:** The Ollama backend serves as a sanity check but runs a highly quantized `q4_0` (4-bit integer) version of the model.
+
+**Implication:** The Ollama sanity pass is fast and memory-efficient because the model's footprint was permanently compressed. The AirLLM result is significant because it runs the **uncompressed `fp16` model** within a constrained memory environment, achieving what `transformers-cpu` could not.
+
+### The Latency Trade-off
+Layer streaming incurs a massive I/O penalty. Every token generated requires reloading the entire model from disk, layer by layer. Our benchmark recorded a generation time of 1847.5 seconds for AirLLM (at 0.009 tokens/s).
+
+**Conclusion:** The primary value of AirLLM is **feasibility**, not speed. It trades latency for capability, making it possible to experiment with models that would otherwise be completely inaccessible on the host hardware. The headline metric is the **reduction in peak memory**.
+
+---
+
 ## 📜 Credits & License
 
 - **AirLLM** by [lyogavin](https://github.com/lyogavin/airllm) — layer-by-layer inference.
