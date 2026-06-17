@@ -90,6 +90,8 @@ class TestCliReport:
             patch("airllm_bench.cli.get_settings") as mock_settings,
             patch("airllm_bench.cli.summarize", return_value=df),
             patch("airllm_bench.cli.plot_comparison", return_value=[]),
+            patch("airllm_bench.cli.write_comparison_table", return_value=tmp_path / "comparison_table.md"),
+            patch("airllm_bench.cli.render_comparison_markdown", return_value="| Backend | ... |"),
         ):
             mock_settings.return_value.results_dir = str(tmp_path)
             mock_settings.return_value.assets_dir = str(tmp_path)
