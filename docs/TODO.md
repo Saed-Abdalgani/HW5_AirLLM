@@ -214,8 +214,8 @@ peak memory well below the baseline's requirement; result + preview saved.
 
 | # | Task | Pri | Status |
 |---|------|-----|--------|
-| 4.1 | Create `notebooks/colab_gpu.ipynb` running same SDK path on T4 | P1 | ☐ |
-| 4.2 | Run identical model/prompt/tokens; export `results/run_gpu_*.json` | P1 | ☐ |
+| 4.1 | Create `notebooks/colab_gpu.ipynb` running same SDK path on T4 | P1 | ☑ |
+| 4.2 | Run identical model/prompt/tokens; export `results/run_gpu_*.json` | P1 | ☑ |
 | 4.3 | Implement `GpuResultImporter` (B4) to load Colab JSON | P1 | ☐ |
 | 4.4 | If no Colab → record B4 `N/A` with theoretical estimate (ADR-2) | P2 | ☐ |
 
