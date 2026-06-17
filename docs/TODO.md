@@ -144,7 +144,7 @@ Unit-test suite: `tests/unit/` — 17 test files covering all P1 modules.
 | 2.3 | Run large model via `TransformersCpuBackend` (expect OOM) | P0 | ☑ |
 | 2.4 | Map OOM/timeout → `RunResult(status=failed, reason=...)` (no crash) | P0 | ☑ |
 | 2.5 | Record baseline failure result + logs | P0 | ☑ |
-| 2.6 | (Optional) Execute slow-via-pagefile variant; document virtual memory | P2 | ☐ |
+| 2.6 | (Optional) Execute slow-via-pagefile variant; document virtual memory | P2 | ☑ |
 
 **DoD P2:** Large model on plain CPU is recorded as a **failure / extreme
 slowdown**, captured cleanly as a RunResult with reason, host not frozen.
@@ -181,7 +181,7 @@ slowdown**, captured cleanly as a RunResult with reason, host not frozen.
 | 3.3 | Run same large model via AirLLM; capture metrics incl. peak RSS | P0 | ☑ |
 | 3.4 | Verify peak RSS within ceiling; if OOM → fall back 3B→1.5B (ADR-3) | P0 | ☑ |
 | 3.5 | Record AirLLM success RunResult + output preview | P0 | ☑ |
-| 3.6 | (Stretch) Attempt 7B/8B with apps closed / larger pagefile | P2 | ☐ |
+| 3.6 | (Stretch) Attempt 7B/8B with apps closed / larger pagefile | P2 | ☑ |
 
 **DoD P3:** Same large model **completes** generation under AirLLM on the host,
 peak memory well below the baseline's requirement; result + preview saved.
@@ -242,9 +242,9 @@ documented N/A with rationale.
 
 | # | Task | Pri | Status |
 |---|------|-----|--------|
-| 5.1 | `sdk.summarize()` → merged comparison DataFrame/CSV | P0 | ☐ |
-| 5.2 | `sdk.plot_comparison()` → bar charts (runtime, peak RSS, tokens/s) to `assets/` | P0 | ☐ |
-| 5.3 | Build comparison table: GPU / CPU / AirLLM / Ollama | P0 | ☐ |
+| 5.1 | `sdk.summarize()` → merged comparison DataFrame/CSV | P0 | ☑ |
+| 5.2 | `sdk.plot_comparison()` → bar charts (runtime, peak RSS, tokens/s) to `assets/` | P0 | ☑ |
+| 5.3 | Build comparison table: GPU / CPU / AirLLM / Ollama | P0 | ☑ |
 | 5.4 | Write analysis in `results/` + README: why AirLLM fits (virtual-memory framing) | P0 | ☑ |
 | 5.5 | Document precision caveat (fp16 vs q4) and latency context | P1 | ☑ |
 
@@ -281,9 +281,9 @@ assignment (response time, memory, runtime across GPU/CPU/AirLLM).
 | 6.4 | `uv run ruff check .` → zero violations; add docstrings to public API | P0 | ☑ |
 | 6.5 | Ensure every file ≤150 code lines; split if needed | P1 | ☑ |
 | 6.6 | Write `README.md` (install, usage, config, examples, troubleshooting, credits, license) | P0 | ☑ |
-| 6.7 | Write `docs/PRD_airllm_layer_streaming.md` (per-mechanism PRD) | P1 | ☐ |
-| 6.8 | Verify secrets safety: `.env` ignored, `.env-example` present, no token in logs | P0 | ☐ |
-| 6.9 | Run final readiness checklist (system-prompt §Final) → READY/CONDITIONAL/NOT | P0 | ☐ |
+| 6.7 | Write `docs/PRD_airllm_layer_streaming.md` (per-mechanism PRD) | P1 | ☑ |
+| 6.8 | Verify secrets safety: `.env` ignored, `.env-example` present, no token in logs | P0 | ☑ |
+| 6.9 | Run final readiness checklist (system-prompt §Final) → READY/CONDITIONAL/NOT | P0 | ☑ |
 
 **DoD P6:** Tests ≥85% + ruff clean + README + per-mechanism PRD complete;
 secrets safe; final audit verdict recorded.
@@ -312,14 +312,14 @@ secrets safe; final audit verdict recorded.
 
 ## Global Definition of Done (project-level)
 
-- ☐ All P0 tasks across phases complete.
-- ☐ Reproducible: fresh `uv sync` + documented commands reproduce the 3 outcomes
+- ☑ All P0 tasks across phases complete.
+- ☑ Reproducible: fresh `uv sync` + documented commands reproduce the 3 outcomes
   (tiny success, baseline fail, AirLLM success).
-- ☐ Comparison artifact (CSV + chart) covers GPU / CPU / AirLLM (+ Ollama).
-- ☐ Written analysis ties results to AirLLM layer-streaming / virtual memory.
-- ☐ Tests ≥85% coverage; `ruff` zero violations.
-- ☐ No secrets in git; `.env-example` documents config.
-- ☐ Docs complete: PRD, PLAN, TODO, per-mechanism PRD, README.
+- ☑ Comparison artifact (CSV + chart) covers GPU / CPU / AirLLM (+ Ollama).
+- ☑ Written analysis ties results to AirLLM layer-streaming / virtual memory.
+- ☑ Tests ≥85% coverage; `ruff` zero violations.
+- ☑ No secrets in git; `.env-example` documents config.
+- ☑ Docs complete: PRD, PLAN, TODO, per-mechanism PRD, README.
 
 ---
 

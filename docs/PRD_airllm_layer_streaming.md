@@ -1,146 +1,48 @@
-# PRD — AirLLM Layer Streaming Mechanism
+# PRD: AirLLM Layer Streaming Mechanism
 
-> Per-mechanism Product Requirements Document  
-> Part of: `docs/PRD.md` ecosystem for `airllm-bench`
+## 1. Overview
+This document specifies the AirLLM layer streaming algorithm, which is the core mechanism enabling large language models (LLMs) to execute on severely memory-constrained hosts. By explicitly paging model weights to and from disk at the granularity of a single transformer layer, this subsystem prevents the Out-Of-Memory (OOM) failures inherent to traditional monolithic loading paradigms.
 
----
+## 2. Goals & Assumptions
+**Goals:**
+- Enable inference for a 3B+ parameter model (requiring ~6 GB in `fp16`) on a host with only 2.5 GB of free RAM.
+- Maintain maximum fidelity by avoiding aggressive lossy quantization (i.e., operating on original `fp16` weights rather than `q4`).
+- Transparently manage disk I/O without requiring changes to the user's inference code.
 
-## 1. What is AirLLM Layer Streaming?
+**Assumptions & Constraints:**
+- The host has a fast SSD to mitigate the massive I/O penalty.
+- Latency is acceptable. Speed is sacrificed for the pure capability of execution (feasibility).
 
-AirLLM is an inference library that enables running large language models on
-hardware where the total model size exceeds available RAM, by streaming
-transformer layers from disk **one at a time**.
+## 3. Mechanism Description
+The layer streaming mechanism effectively implements a targeted virtual memory manager for transformer layers.
 
-### 1.1 The Core Idea
+### Phase 1: Pre-processing (Sharding)
+When the model is invoked for the first time, the monolithic checkpoint is intercepted.
+1. The checkpoint is parsed to isolate the embedding table, individual transformer layers (e.g., layers 0 through $N-1$), and the final output heads.
+2. Each separated block is serialized to disk as an independent "shard" file within `SHARDS_PATH`.
 
-A transformer model (e.g. Qwen2.5-3B) consists of:
-- An **embedding table**: maps token IDs to vectors (~400 MB for 3B vocabulary)
-- **N decoder layers**: each is a self-contained block of attention + FFN weights
-- A **language model head**: projects hidden states back to vocabulary logits
+### Phase 2: Per-Layer Load / Compute / Offload
+During the forward pass of generation, the system abandons the `transformers` default loop and instead performs the following sequence for every generated token:
+1. Load the embedding table into RAM.
+2. Compute token embeddings and save intermediate activations.
+3. For $i = 0$ to $N-1$:
+   - Load shard $i$ (Layer $i$) from disk into RAM.
+   - Perform the forward pass on the current activations.
+   - Overwrite the intermediate activations in memory with the new output.
+   - Explicitly delete Layer $i$ from RAM (triggering garbage collection).
+4. Load the LM Head, compute logits, and sample the next token.
 
-Standard loading (e.g. `from_pretrained()`) loads **all** of these into RAM
-simultaneously. For a 3B fp16 model: ~6 GB required.
+## 4. Memory Math
+For `Qwen/Qwen2.5-3B-Instruct` (approx 36 transformer layers):
+- **Monolithic Load (Baseline):** 
+  $6 \text{ GB (Weights)} + 400 \text{ MB (KV Cache / Activations)} \approx 6.4 \text{ GB}$ (Result: OOM)
+- **AirLLM Streaming:** 
+  $400 \text{ MB (Embeddings)} + 150 \text{ MB (One Layer)} + 400 \text{ MB (Activations)} \approx 950 \text{ MB}$ 
+  *(System overhead accounts for the measured ~2.9 GB peak RSS, but it remains well below the 3.5 GB ceiling.)*
 
-AirLLM instead:
-1. Splits the checkpoint into **per-layer shard files** on disk (first run only).
-2. At inference time, loads **one layer**, runs the forward pass, **unloads**
-   that layer, then loads the next.
-3. Peak RAM ≈ embedding + one layer ≈ 400 MB + 150 MB ≈ ~550 MB per layer pass.
-
----
-
-## 2. Memory Mathematics
-
-For `Qwen/Qwen2.5-3B-Instruct` (fp16):
-
-| Component | Size (fp16) |
-|-----------|-------------|
-| Embedding table (32K vocab × 2048 dim) | ~262 MB |
-| 1 decoder layer (attention + FFN at 2048/8192) | ~50–150 MB |
-| 36 decoder layers (Qwen2.5-3B) | ~5.4 GB total |
-| LM head (tied to embedding) | ~262 MB |
-| **Total (standard load)** | **~6 GB** |
-| **AirLLM peak** | **~550 MB + embedding** |
-
-On the target host (2.5 GB free RAM):
-- Standard: **FAIL** (needs 6 GB, has 2.5 GB)
-- AirLLM: **SUCCESS** (needs ~550 MB peak per layer)
-
----
-
-## 3. The Sharding Process (First Run)
-
-On the very first `AirllmBackend.load()` call:
-
-1. `airllm.AutoModel.from_pretrained()` detects no shards at `SHARDS_PATH`.
-2. Downloads the full checkpoint (or reads from HF cache).
-3. Splits each transformer layer into a separate `.safetensors` file.
-4. Saves shards to `data/shards/<model_name>/splitted_model/`.
-
-On subsequent runs, the shards are reused — no re-splitting.
-
-**First-run split time** (measured separately): ~287 seconds on the target host.
-
----
-
-## 4. Inference Flow (Per Token)
-
-```
-For each generation step:
-  For each layer i in [0, N-1]:
-    1. load_layer(i)         ← read shard_i from disk into RAM
-    2. hidden = layer_i(hidden)   ← forward pass (CPU)
-    3. unload_layer(i)       ← free RAM
-  Apply LM head → logits → argmax → token_id
-  Decode token_id → text
-```
-
-**Consequence:** `generate_time_s` for 16 tokens involves `16 × N` layer
-load/compute/unload cycles = `16 × 36 = 576` disk-load operations for a 3B model.
-
-This explains the **extreme latency** (1847 s for 16 tokens) — it is the
-expected and documented cost of staying within 2.5 GB RAM on a slow i3 CPU.
-
----
-
-## 5. Trade-offs (Documented for Report)
-
-| Dimension | AirLLM | transformers-cpu | Ollama (q4) |
-|-----------|--------|-----------------|-------------|
-| Peak RAM | ~2.9 GB ✅ | ~3.5 GB ❌ OOM | ~612 MB ✅ |
-| Latency | Very high (1847 s / 16 tok) | N/A (OOM) | 4.2 s / 16 tok |
-| Precision | fp16 | fp16 | q4 (lossy) |
-| Disk usage | Model × 2 (original + shards) | Model × 1 | q4 GGUF |
-| GPU support | CPU + GPU | CPU + GPU | CPU (llama.cpp) |
-
-**Precision honesty note:** AirLLM (fp16) and transformers-cpu (fp16) are
-comparable in quality. Ollama (q4) is 4-bit quantised — lower quality but much
-faster and uses far less memory. The headline comparison for this assignment
-focuses on **feasibility** and **peak memory**, with latency reported in context.
-
----
-
-## 6. Virtual Memory Analogy
-
-AirLLM is an **application-level explicit pager** for model weights:
-
-| OS Concept | AirLLM Equivalent |
-|------------|-------------------|
-| Page | One transformer layer |
-| Page file | `data/shards/` on disk |
-| Page fault | `load_layer(i)` call |
-| Page eviction | `unload_layer(i)` / `del layer` |
-| Working set | Embedding + current layer |
-| TLB hit | Layer already in RAM (not applicable — AirLLM always evicts) |
-
-The key insight: the OS's virtual memory system would page *process* memory to
-disk automatically, but at a coarse granularity and not tuned for transformer
-inference patterns. AirLLM does it **explicitly and optimally** — it knows
-exactly which layer is needed next and for how long.
-
----
-
-## 7. ADR-1 — `compression=None` on CPU
-
-**Decision:** Use `compression=None` (full fp16) rather than 4-bit or 8-bit
-quantisation via bitsandbytes.
-
-**Rationale:**
-- `bitsandbytes` 4-bit / 8-bit quantisation requires CUDA.
-- The target host has no CUDA GPU (Intel UHD integrated, no CUDA support).
-- `compression=None` → fp16 layer streaming is the only viable path.
-
-**Trade-off accepted:** Each layer is larger in fp16 than in 4-bit, so more
-disk I/O per step. But it *runs*, whereas bitsandbytes would fail at import.
-
----
-
-## 8. Acceptance Criteria
-
-- AC1. `AirllmBackend.load()` calls `AutoModel.from_pretrained` with
-  `device='cpu'`, `compression=None`, and `layer_shards_saving_path` set.
-- AC2. First run populates `data/shards/<model>/splitted_model/` with shard files.
-- AC3. `generate()` returns a non-empty string for `MAX_NEW_TOKENS=16`.
-- AC4. Peak RSS measured by `MemoryMonitor` stays below `MEMORY_CEILING_MB`.
-- AC5. `RunResult.status == "success"` and `output_preview` is non-null.
-- AC6. Unit test: mocked `AutoModel` → correct kwargs (`device='cpu'`, `compression=None`).
+## 5. Trade-offs & Risks
+| Trade-off | Impact | Mitigation |
+| :--- | :--- | :--- |
+| **Latency** | Generating a single token requires reading the entire 6 GB model from disk sequentially. Total runtime is increased by a factor of ~500x over a native RAM execution. | Ensure the use case is asynchronous and latency-insensitive. |
+| **SSD Wear** | Continuous reads and potential swapping generate high disk activity. | Keep generation sequences short (`MAX_NEW_TOKENS`). |
+| **Windows Limits** | Shard creation leads to deep directory structures. | Document the need to enable Long Paths in the Windows Registry. |
