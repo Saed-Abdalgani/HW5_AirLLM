@@ -174,20 +174,25 @@ All tuneable values live in `.env` (copy from `.env-example`):
 ## 🧪 Testing
 
 ```powershell
-# Run all unit tests (no real models needed — everything is mocked)
+# Unit tests only (default — integration tests excluded)
+uv run pytest
+
+# Explicit unit-test path
 uv run pytest tests/unit/ -v
 
-# Run with coverage report
-uv run pytest tests/unit/ --cov=airllm_bench --cov-report=term-missing
+# Coverage gate (≥ 85%, integration excluded)
+uv run pytest -m "not integration" --cov=airllm_bench --cov-report=term-missing --cov-fail-under=85
 
 # Lint check (must be zero violations)
 uv run ruff check .
 
-# Run integration tests (requires real models + Ollama)
-uv run pytest tests/integration/ -m integration -v
+# Integration tests (requires Ollama running + network)
+uv run pytest -m integration -v
 ```
 
-**Coverage target:** ≥ 85% (unit tests, mocked externals).
+**Coverage target:** ≥ 85% on unit tests with mocked externals (HF Hub, Ollama HTTP,
+`airllm.AutoModel`, torch loaders). Heavy real-model runs are tagged
+`@pytest.mark.integration` and excluded from the default `pytest` invocation.
 
 ---
 

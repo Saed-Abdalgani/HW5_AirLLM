@@ -5,13 +5,12 @@ SDK calls are mocked so no real inference runs.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from typer.testing import CliRunner
 
 from airllm_bench.cli import app
-from airllm_bench.constants import STATUS_FAILED, STATUS_SUCCESS
+from airllm_bench.constants import STATUS_SUCCESS
 from airllm_bench.services.metrics.run_result import RunResult
 
 runner = CliRunner()

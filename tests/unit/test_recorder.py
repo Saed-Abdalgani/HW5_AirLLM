@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import csv
 import json
-from pathlib import Path
 
 import pytest
 
 from airllm_bench.constants import STATUS_FAILED, STATUS_SUCCESS
 from airllm_bench.services.metrics.recorder import MetricsRecorder, RunResult
-
 
 FAKE_HOST = {"cpu": "Intel i3", "total_ram_mb": 8192.0, "has_cuda": False}
 

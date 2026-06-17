@@ -5,6 +5,7 @@ No real model downloads or GPU needed.
 
 from __future__ import annotations
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,19 +20,30 @@ def _make_backend(model_id: str = "test/model") -> AirllmBackend:
     return AirllmBackend(settings, model_id=model_id)
 
 
+def _patch_airllm_imports(mock_model: MagicMock, mock_tokenizer: MagicMock):
+    """Inject fake airllm/transformers modules so load() never imports real airllm."""
+    fake_airllm = MagicMock()
+    fake_airllm.AutoModel.from_pretrained.return_value = mock_model
+    fake_transformers = MagicMock()
+    fake_transformers.AutoTokenizer.from_pretrained.return_value = mock_tokenizer
+    return patch.dict(sys.modules, {"airllm": fake_airllm, "transformers": fake_transformers})
+
+
 class TestAirllmBackendLoad:
     def test_load_calls_automodel_with_correct_kwargs(self):
         backend = _make_backend()
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
 
-        with (
-            patch("airllm.AutoModel.from_pretrained", return_value=mock_model) as am_patch,
-            patch("transformers.AutoTokenizer.from_pretrained", return_value=mock_tokenizer),
-        ):
+        fake_airllm = MagicMock()
+        fake_airllm.AutoModel.from_pretrained.return_value = mock_model
+        fake_transformers = MagicMock()
+        fake_transformers.AutoTokenizer.from_pretrained.return_value = mock_tokenizer
+
+        with patch.dict(sys.modules, {"airllm": fake_airllm, "transformers": fake_transformers}):
             backend.load()
 
-        call_kwargs = am_patch.call_args.kwargs
+        call_kwargs = fake_airllm.AutoModel.from_pretrained.call_args.kwargs
         assert call_kwargs.get("device") == "cpu"
         assert call_kwargs.get("compression") is None
         assert backend._model is mock_model  # noqa: SLF001
@@ -45,10 +57,7 @@ class TestAirllmBackendLoad:
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
 
-        with (
-            patch("airllm.AutoModel.from_pretrained", return_value=mock_model),
-            patch("transformers.AutoTokenizer.from_pretrained", return_value=mock_tokenizer),
-        ):
+        with _patch_airllm_imports(mock_model, mock_tokenizer):
             backend.load()
 
         assert backend._shards_path.exists()  # noqa: SLF001

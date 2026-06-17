@@ -6,11 +6,11 @@ All heavy dependencies (backends, executor, host_spec) are mocked.
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from airllm_bench.constants import BackendName, STATUS_SUCCESS
+from airllm_bench.constants import STATUS_SUCCESS, BackendName
 from airllm_bench.sdk.runner import BenchmarkRunner
 from airllm_bench.services.metrics.run_result import RunResult
 from airllm_bench.shared.config import Settings
@@ -106,3 +106,29 @@ class TestBenchmarkRunnerBuildBackend:
         runner = BenchmarkRunner(settings)
         with pytest.raises(ValueError, match="Unknown backend"):
             runner._build_backend("not-a-real-backend")  # noqa: SLF001
+
+
+class TestBenchmarkRunnerImportGpu:
+    def test_import_gpu_from_json(self, tmp_path: Path):
+        settings = Settings(results_dir=str(tmp_path))
+        gpu_json = tmp_path / "run_gpu_test.json"
+        gpu_json.write_text(
+            '{"backend":"gpu","status":"success","model_id":"m","timestamp":"t",'
+            '"failure_reason":null,"load_time_s":1.0,"ttft_s":null,'
+            '"generate_time_s":2.0,"total_runtime_s":3.0,"tokens_per_s":4.0,'
+            '"peak_process_rss_mb":100.0,"peak_system_used_mb":200.0,'
+            '"output_preview":"hi","host":{},"prompt_chars":1,"max_new_tokens":8}',
+            encoding="utf-8",
+        )
+        runner = BenchmarkRunner(settings)
+        result = runner.import_gpu_result(gpu_json)
+        assert result.backend == "gpu"
+        assert result.status == "success"
+        assert list(tmp_path.glob("run_gpu_*.json"))
+
+    def test_import_gpu_na_when_missing(self, tmp_path: Path):
+        settings = Settings(results_dir=str(tmp_path))
+        runner = BenchmarkRunner(settings)
+        result = runner.import_gpu_result(None)
+        assert result.backend == "gpu"
+        assert result.status == "n/a"

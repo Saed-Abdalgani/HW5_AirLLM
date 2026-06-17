@@ -7,7 +7,7 @@ Extracted from ``recorder.py`` to keep each file under 150 lines.
 from __future__ import annotations
 
 import dataclasses
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from airllm_bench.constants import STATUS_FAILED, STATUS_SUCCESS
 from airllm_bench.shared.version import __version__
@@ -33,7 +33,7 @@ class RunResult:
     output_preview: str | None
     host: dict
     timestamp: str = dataclasses.field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(tz=UTC).isoformat()
     )
     airllm_bench_version: str = dataclasses.field(default=__version__)
 
@@ -56,7 +56,7 @@ class RunResult:
         output: str,
         host: dict,
         ttft_s: float | None = None,
-    ) -> "RunResult":
+    ) -> RunResult:
         """Factory for a successful run."""
         tokens_per_s = (
             max_new_tokens / generate_time_s if generate_time_s and generate_time_s > 0 else None
@@ -92,7 +92,7 @@ class RunResult:
         load_time_s: float | None = None,
         peak_process_rss_mb: float | None = None,
         peak_system_used_mb: float | None = None,
-    ) -> "RunResult":
+    ) -> RunResult:
         """Factory for a failed run."""
         return cls(
             backend=backend,

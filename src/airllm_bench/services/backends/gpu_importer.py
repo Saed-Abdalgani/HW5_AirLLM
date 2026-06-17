@@ -15,7 +15,7 @@ import json
 import logging
 from pathlib import Path
 
-from airllm_bench.constants import BackendName, STATUS_NA
+from airllm_bench.constants import STATUS_NA, BackendName
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,8 @@ class GpuResultImporter:
         return {
             "backend": BackendName.GPU.value,
             "model_id": model_id,
+            "prompt_chars": 0,
+            "max_new_tokens": 0,
             "status": STATUS_NA,
             "failure_reason": reason,
             "load_time_s": None,
@@ -90,7 +92,7 @@ class GpuResultImporter:
             "peak_system_used_mb": None,
             "output_preview": None,
             "host": {"has_cuda": False, "device": "N/A", "note": reason},
-            "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+            "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "airllm_bench_version": "0.1.0",
             "note": "Theoretical: T4 fp16 ≈ 1–2 s load, 5–10 tokens/s, ~6 GB VRAM peak.",
         }

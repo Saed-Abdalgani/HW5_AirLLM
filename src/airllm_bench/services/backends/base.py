@@ -52,3 +52,4 @@ class InferenceBackend(ABC):
 
     def teardown(self) -> None:
         """Release resources (optional — override if needed)."""
+        return

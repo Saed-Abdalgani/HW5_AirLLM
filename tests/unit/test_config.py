@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from airllm_bench.shared.config import Settings

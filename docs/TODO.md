@@ -275,12 +275,12 @@ assignment (response time, memory, runtime across GPU/CPU/AirLLM).
 
 | # | Task | Pri | Status |
 |---|------|-----|--------|
-| 6.1 | Unit tests for all modules (mock HF/Ollama/AirLLM/torch) per PLAN §9 | P0 | ☐ |
-| 6.2 | Mark heavy runs as `integration`; exclude from coverage gate | P1 | ☐ |
-| 6.3 | Reach **≥85% coverage**; `uv run pytest --cov` green | P0 | ☐ |
-| 6.4 | `uv run ruff check .` → zero violations; add docstrings to public API | P0 | ☐ |
-| 6.5 | Ensure every file ≤150 code lines; split if needed | P1 | ☐ |
-| 6.6 | Write `README.md` (install, usage, config, examples, troubleshooting, credits, license) | P0 | ☐ |
+| 6.1 | Unit tests for all modules (mock HF/Ollama/AirLLM/torch) per PLAN §9 | P0 | ☑ |
+| 6.2 | Mark heavy runs as `integration`; exclude from coverage gate | P1 | ☑ |
+| 6.3 | Reach **≥85% coverage**; `uv run pytest --cov` green | P0 | ☑ |
+| 6.4 | `uv run ruff check .` → zero violations; add docstrings to public API | P0 | ☑ |
+| 6.5 | Ensure every file ≤150 code lines; split if needed | P1 | ☑ |
+| 6.6 | Write `README.md` (install, usage, config, examples, troubleshooting, credits, license) | P0 | ☑ |
 | 6.7 | Write `docs/PRD_airllm_layer_streaming.md` (per-mechanism PRD) | P1 | ☐ |
 | 6.8 | Verify secrets safety: `.env` ignored, `.env-example` present, no token in logs | P0 | ☐ |
 | 6.9 | Run final readiness checklist (system-prompt §Final) → READY/CONDITIONAL/NOT | P0 | ☐ |

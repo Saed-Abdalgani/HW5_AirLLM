@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -43,8 +42,8 @@ app = typer.Typer(
 
 @app.command("run")
 def cmd_run(
-    backend: BackendName = typer.Option(..., "--backend", "-b", help="Backend to benchmark."),
-    model_id: Optional[str] = typer.Option(None, "--model-id", help="Override MODEL_ID."),  # noqa: UP007
+    backend: BackendName = typer.Option(..., "--backend", "-b", help="Backend to benchmark."),  # noqa: B008
+    model_id: str | None = typer.Option(None, "--model-id", help="Override MODEL_ID."),  # noqa: B008
 ) -> None:
     """Run a single backend and print the result summary."""
     settings = get_settings()
@@ -68,7 +67,7 @@ def cmd_run_all() -> None:
 
 @app.command("import-gpu")
 def cmd_import_gpu(
-    json_path: Optional[Path] = typer.Option(None, "--json-path", help="Path to Colab JSON."),  # noqa: UP007
+    json_path: Path | None = typer.Option(None, "--json-path", help="Path to Colab JSON."),  # noqa: B008
 ) -> None:
     """Import a GPU run result, or record a placeholder N/A result if none provided."""
     settings = get_settings()

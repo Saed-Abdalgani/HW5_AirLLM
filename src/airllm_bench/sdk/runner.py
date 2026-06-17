@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 
 from airllm_bench.constants import BackendName
+from airllm_bench.sdk._executor import execute_run
 from airllm_bench.services.backends.airllm_backend import AirllmBackend
 from airllm_bench.services.backends.ollama_backend import OllamaBackend
 from airllm_bench.services.backends.transformers_cpu_backend import TransformersCpuBackend
@@ -21,7 +22,6 @@ from airllm_bench.services.host_spec import capture_host_spec, write_host_spec
 from airllm_bench.services.metrics.memory_monitor import MemoryMonitor
 from airllm_bench.services.metrics.recorder import MetricsRecorder, RunResult
 from airllm_bench.services.metrics.timer import Timer
-from airllm_bench.sdk._executor import execute_run
 from airllm_bench.shared.config import Settings
 from airllm_bench.shared.gatekeeper import Gatekeeper
 
@@ -84,18 +84,18 @@ class BenchmarkRunner:
     def import_gpu_result(self, colab_json_path: Path | None = None) -> RunResult:
         """Import a Colab GPU JSON result or record an N/A estimate if not found."""
         import dataclasses
+
         from airllm_bench.services.backends.gpu_importer import GpuResultImporter
-        
         if colab_json_path and colab_json_path.exists():
             importer = GpuResultImporter(colab_json_path)
             data = importer.load()
         else:
             data = GpuResultImporter.make_na_result(self._settings.model_id)
-            
+
         valid_keys = {f.name for f in dataclasses.fields(RunResult)}
         filtered_data = {k: v for k, v in data.items() if k in valid_keys}
         result = RunResult(**filtered_data)
-        
+
         self._recorder.write(result)
         return result
 

@@ -104,6 +104,10 @@ class TestPlotComparison:
             assert path.suffix == ".png"
             assert path.stat().st_size > 0
 
+    def test_empty_dataframe_returns_no_paths(self, tmp_path: Path):
+        paths = plot_comparison(pd.DataFrame(), tmp_path / "assets")
+        assert paths == []
+
 
 class TestComparisonTable:
     def test_markdown_includes_all_backends(self, tmp_path: Path):
@@ -124,3 +128,15 @@ class TestComparisonTable:
         path = write_comparison_table(df, tmp_path)
         assert path.name == COMPARISON_TABLE_FILENAME
         assert path.read_text(encoding="utf-8").startswith("# Benchmark Comparison")
+
+    def test_na_status_rendered(self):
+        df = pd.DataFrame([
+            {**_base_record("gpu", STATUS_NA), "display_name": "GPU"},
+        ])
+        md = render_comparison_markdown(df)
+        assert "n/a" in md
+
+    def test_empty_dataframe_header_only(self):
+        md = render_comparison_markdown(pd.DataFrame())
+        assert "Backend | Model | Status" in md
+        assert "—" in md

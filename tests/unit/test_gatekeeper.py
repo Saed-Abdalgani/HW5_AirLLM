@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import threading
 import time
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -66,28 +65,33 @@ class TestGatekeeperRetry:
 
 class TestGatekeeperConcurrency:
     def test_semaphore_limits_concurrent_calls(self):
-        """With max_concurrent=1, second call must wait for first."""
+        """With max_concurrent=1, only one call runs at a time."""
         settings = Settings()
         settings = settings.model_copy(update={"hf_rate_limit_per_min": 6000})
         gk = Gatekeeper(settings, max_concurrent=1)
 
-        results: list[int] = []
-        barrier = threading.Barrier(2)
+        active = {"count": 0, "max": 0}
+        lock = threading.Lock()
 
         def slow_fn(idx: int) -> int:
-            barrier.wait(timeout=2)
-            time.sleep(0.01)
-            results.append(idx)
+            with lock:
+                active["count"] += 1
+                active["max"] = max(active["max"], active["count"])
+            time.sleep(0.05)
+            with lock:
+                active["count"] -= 1
             return idx
 
-        threads = [threading.Thread(target=gk.call, args=(Target.OLLAMA, slow_fn, i)) for i in range(2)]
+        threads = [
+            threading.Thread(target=gk.call, args=(Target.OLLAMA, slow_fn, i))
+            for i in range(2)
+        ]
         for t in threads:
             t.start()
         for t in threads:
             t.join(timeout=5)
 
-        # Both should complete (no deadlock).
-        assert len(results) == 2
+        assert active["max"] == 1
 
 
 class TestGatekeeperLogging:

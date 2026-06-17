@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from airllm_bench.constants import REASON_OOM, REASON_TIMEOUT, STATUS_FAILED, STATUS_SUCCESS
 from airllm_bench.sdk._executor import execute_run
 from airllm_bench.services.metrics.memory_monitor import MemoryMonitor

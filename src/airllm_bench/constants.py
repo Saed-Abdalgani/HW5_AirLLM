@@ -6,7 +6,7 @@ enum members) live here so they are never duplicated across modules.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Unit helpers
@@ -21,7 +21,7 @@ GB: float = MB * 1024.0
 # ---------------------------------------------------------------------------
 
 
-class BackendName(str, Enum):
+class BackendName(StrEnum):
     """Identifies the inference backend used for a benchmark run."""
 
     OLLAMA = "ollama"
@@ -35,7 +35,7 @@ class BackendName(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class Target(str, Enum):
+class Target(StrEnum):
     """External systems routed through the Gatekeeper."""
 
     HF_HUB = "hf_hub"

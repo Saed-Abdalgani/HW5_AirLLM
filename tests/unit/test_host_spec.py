@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import patch
-
 from airllm_bench.services.host_spec import capture_host_spec, write_host_spec
 
 

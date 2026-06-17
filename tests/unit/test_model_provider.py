@@ -30,7 +30,7 @@ class TestModelProvider:
 
         fake_path = "/fake/model/path"
         with patch(
-            "airllm_bench.services.model_provider.snapshot_download",
+            "huggingface_hub.snapshot_download",
             return_value=fake_path,
         ) as mock_dl:
             result = provider.ensure("Qwen/Qwen2.5-0.5B-Instruct")
